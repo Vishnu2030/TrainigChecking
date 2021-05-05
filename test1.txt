@@ -1,0 +1,219 @@
+# importing all lib
+import pyttsx3  # speech to text lib
+import datetime  # for date and time
+import speech_recognition as sr  # importing the speech recogniger
+import wikipedia  # importing wikipedia for queries
+import webbrowser as wb  # for web browsing purpose
+import psutil
+import os  # for os related issues
+import sys
+# import random
+import open_cv
+import wolframalpha
+# import time
+
+engine = pyttsx3.init(driverName='sapi5')  # object creation
+client = wolframalpha.Client('WJJ9W2-6AQP5A8KK4')
+""" RATE"""
+rate = engine.getProperty('rate')  # getting details of current speaking rate
+print(rate)  # printing current voice
+engine.setProperty('rate', 150)  # setting up new voice rate
+
+"""VOLUME"""
+volume = engine.getProperty('volume')  # getting to know current volume level (min=0 and max=1)
+print(volume)  # printing current volume level
+engine.setProperty('volume', 1)  # setting up volume level  between 0 and 1
+
+"""VOICE"""
+voices = engine.getProperty('voices')  # getting details of current voice
+# engine.setProperty('voice', voices[0].id)  #changing index, changes voices. o for male
+engine.setProperty('voice', voices[1].id)  # changing index, changes voices. 1 for female
+
+# engine.say("Hello World!")
+engine.say("my name is sa na , and i am vishnu personal assistant ")
+# engine.say('My current speaking rate is ' + str(rate))
+engine.runAndWait()
+engine.stop()
+
+"""Saving Voice to a file"""
+
+
+# On linux make sure that 'espeak' and 'ffmpeg' are installed
+engine.save_to_file('Hello World', 'test.mp3')
+engine.runAndWait()
+# engine = pyttsx3.init(driverName='sapi5')
+# engine.say("hi")
+# engine.runAndWait()
+
+
+def speak(audio):
+    engine.say(audio)
+    engine.runAndWait()
+
+
+# speak("ok i am working now")
+# speak(audio='ok done')
+def time_fun():
+    speak("the current time is")
+    time1 = datetime.datetime.now().strftime("%I:%M:%S")
+    speak(time1)
+
+
+def date_fun():
+    speak("the current date is ")
+    year = int(datetime.datetime.now().year)
+    month = int(datetime.datetime.now().month)
+    date = int(datetime.datetime.now().day)
+    speak(date)
+    speak(month)
+    speak(year)
+
+
+def wish():
+    speak("the current time is ")
+    time_fun()
+    speak("the current date is ")
+    date_fun()
+
+
+def hour1():
+    hour = int(datetime.datetime.now().hour)
+    if hour >= 0 and hour < 12:
+        speak("good morning vishnu")
+
+    elif hour >= 12 and hour < 18:
+        speak("good ofternon vishnu")
+
+    elif hour >= 18 and hour != 0:
+        speak("good evening vishnu")
+
+
+hour1()
+
+
+def introduce():
+    speak("my name is sa na , and vishnu personal assistant "
+          "my ram is 4 gb with 500 gb storage "
+          "and you can call me sa na ")
+
+
+def take():
+    r = sr.Recognizer()
+    global Input
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source)
+    try:
+        print("Recognizing...")
+        Input = r.recognize_google(audio, language='en-in')
+        print(f"You said: {Input}\n")
+    except sr.UnknownValueError:
+        speak('Sorry! I didn\'t get that! ')
+        Input = str(input('Command: '))
+
+    return Input
+
+
+def cpu():
+    usage = str(psutil.cpu_percent())
+    speak('cpu is at' + usage)
+    battery = psutil.sensors_battery()
+    speak('battery is at')
+    speak(battery.percent)
+
+
+if __name__ == "__main__":
+    while True:
+        Input = take().lower()
+        if 'what is the time' in Input:
+            time_fun()
+        elif 'date' in Input:
+            date_fun()
+        elif 'introduce' in Input or 'your self' in Input or 'about you' in Input or 'who are you' in Input or 'you' in Input:
+            introduce()
+        elif 'wikipedia' in Input:
+            speak("searching...")
+            Input = Input.replace("wikipedia", " ")
+            result = wikipedia.summary(Input, sentences=2)
+            print(result)
+            speak(result)
+        elif 'in web' in Input:
+
+            speak("what should i search ")
+            print("what should i search ")
+            # chromepath = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+            search = take().lower()
+            wb.get(wb.open_new_tab(search) + '.com')
+        elif 'remember' in Input or 'make note' in Input or 'remember me' in Input:
+            speak("what should i remember vishnu")
+            data = take()
+            speak('you said' + data)
+            remember = open('data.txt', 'w')
+            remember.write(data)
+            remember.close()
+        elif 'cpu' in Input:
+            cpu()
+        elif 'about me' in Input or 'tell about me ' in Input or 'who am i ' in Input or 'me' in Input:
+            speak('your are my darling vishnu ')
+            print('your are my darling vishnu ')
+        elif 'logout' in Input:
+            os.system("shutdown -l")
+        elif 'shutdown' in Input:
+            os.system("shutdown /s /t l")
+        elif 'restart' in Input:
+            os.system("shutdown /r /t 1")
+        elif 'open youtube' in Input:
+            speak("Here you go to Youtube\n")
+            wb.open("youtube.com")
+        elif 'open google' in Input:
+            speak("Here you go to Google\n")
+            wb.open("google.com")
+        elif "where is" in Input:
+            Input = Input.replace("where is", "")
+            location = Input
+            speak("User asked to Locate")
+            speak(location)
+            wb.open("https://www.google.nl / maps / place/" + location + "")
+        elif 'exit' in Input or 'terminate' in Input or 'stop' in Input or 'close the program' in Input:
+            speak('okay')
+            speak('closing program.')
+            sys.exit()
+        elif 'show my face' in Input or 'recognize' in Input or 'identify me' in Input or 'identify face' in Input:
+            speak('finding faces')
+            open_cv.face_recognition()
+        elif 'open gmail' in Input:
+            wb.open_new_tab("gmail.com")
+            speak("yeah opening")
+            # time.sleep(5)
+        elif 'open whatsapp' in Input or 'whatsapp ' in Input or 'turn on whatapp ' in Input:
+            wb.open_new_tab("web.whatsapp.com")
+            speak("yeah opening")
+        elif 'open camera' in Input or 'mirror' in Input or 'show me my face' in Input or 'open mirror' in Input:
+            open_cv.mirror()
+        else:
+            Input = Input
+            speak('Searching...')
+            print('Searching...')
+            try:
+                try:
+                    res = client.query(Input)
+                    outputs = next(res.outputs).text
+                    speak('Alpha says')
+                    #  speak('Gotcha')
+                    speak(outputs)
+
+                except:
+                    outputs = wikipedia.summary(Input, sentences=2)
+                    # speak('Gotcha')
+                    print('wikipedia says:', outputs)
+                    speak('Wikipedia says')
+                    speak(outputs)
+            except:
+                speak('do you like to search in google')
+                if 'yes' or 'yeh' or 'ok' or 'sure' or 'fine' in Input:
+                        speak("searching on google for " + Input)
+                        say = Input.replace(' ', '+')
+                        wb.open('https://www.google.co.in/search?q=' + Input)
+
+
